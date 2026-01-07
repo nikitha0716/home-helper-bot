@@ -2,13 +2,12 @@ import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Gauge, 
-  Zap, 
-  Hand,
   AlertTriangle
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { RobotState, ControlDirection, RobotMode } from '@/types/robot';
+import { ModeToggle } from './ModeToggle';
+import { RobotAnimation } from './RobotAnimation';
 
 interface ManualControlProps {
   state: RobotState;
@@ -23,9 +22,8 @@ export function ManualControl({
   onControl,
   onSpeedChange,
   onModeChange,
-  onEmergencyStop,
 }: ManualControlProps) {
-  const { mode, speed, bluetoothStatus, isMoving } = state;
+  const { mode, speed, bluetoothStatus, isMoving, status } = state;
   const isConnected = bluetoothStatus === 'connected';
   
   const [joystickPos, setJoystickPos] = useState({ x: 0, y: 0 });
@@ -76,32 +74,24 @@ export function ManualControl({
   return (
     <div className="flex flex-col h-full p-4 space-y-6">
       {/* Header */}
-      <div className="text-center space-y-1">
+      <div className="text-center space-y-2">
         <h1 className="text-xl font-semibold">Manual Control</h1>
         <p className="text-sm text-muted-foreground">
           {isConnected ? 'Bluetooth control active' : 'Connect to enable controls'}
         </p>
+        
+        {/* Robot Status Animation */}
+        <div className="flex justify-center pt-2">
+          <RobotAnimation status={status} size="md" showLabel />
+        </div>
       </div>
 
-      {/* Mode Toggle */}
-      <div className="flex gap-2">
-        <Button
-          variant={mode === 'auto' ? 'default' : 'outline'}
-          className="flex-1 py-6"
-          onClick={() => onModeChange('auto')}
-        >
-          <Zap className="w-5 h-5 mr-2" />
-          Auto Mode
-        </Button>
-        <Button
-          variant={mode === 'manual' ? 'default' : 'outline'}
-          className="flex-1 py-6"
-          onClick={() => onModeChange('manual')}
-        >
-          <Hand className="w-5 h-5 mr-2" />
-          Manual Mode
-        </Button>
-      </div>
+      {/* Mode Toggle with Tooltips */}
+      <ModeToggle 
+        mode={mode} 
+        onModeChange={onModeChange}
+        disabled={!isConnected}
+      />
 
       {/* Joystick */}
       <div className="flex-1 flex items-center justify-center">
@@ -180,14 +170,8 @@ export function ManualControl({
         </motion.div>
       )}
 
-      {/* Emergency Stop */}
-      <Button
-        onClick={onEmergencyStop}
-        className="w-full h-16 emergency-stop text-xl"
-        disabled={!isConnected}
-      >
-        EMERGENCY STOP
-      </Button>
+      {/* Emergency stop is now handled by floating button */}
+      <div className="h-4" /> {/* Spacer for floating button */}
     </div>
   );
 }

@@ -9,12 +9,14 @@ import { CameraView } from '@/components/robot/CameraView';
 import { ManualControl } from '@/components/robot/ManualControl';
 import { StatusPanel } from '@/components/robot/StatusPanel';
 import { DestinationDialog } from '@/components/robot/DestinationDialog';
+import { FloatingEmergencyStop } from '@/components/robot/FloatingEmergencyStop';
 import { RoomId } from '@/types/robot';
 
 const RobotControlApp = () => {
   const [activeTab, setActiveTab] = useState<TabId>('bluetooth');
   const [selectedDestination, setSelectedDestination] = useState<RoomId | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isSimulation, setIsSimulation] = useState(true);
 
   const {
     state,
@@ -52,11 +54,18 @@ const RobotControlApp = () => {
     setSelectedDestination(null);
   }, []);
 
+  const handleToggleSimulation = useCallback(() => {
+    setIsSimulation((prev) => !prev);
+  }, []);
+
   const pageVariants = {
     initial: { opacity: 0, x: 20 },
     animate: { opacity: 1, x: 0 },
     exit: { opacity: 0, x: -20 },
   };
+
+  // Show floating stop on certain screens
+  const showFloatingStop = activeTab !== 'bluetooth' && activeTab !== 'status';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -65,6 +74,8 @@ const RobotControlApp = () => {
         bluetoothStatus={state.bluetoothStatus}
         wifiStatus={state.wifiStatus}
         batteryLevel={state.batteryLevel}
+        isSimulation={isSimulation}
+        onToggleSimulation={handleToggleSimulation}
       />
 
       {/* Main Content */}
@@ -128,6 +139,13 @@ const RobotControlApp = () => {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Floating Emergency Stop */}
+      <FloatingEmergencyStop
+        onStop={emergencyStop}
+        isBluetoothConnected={state.bluetoothStatus === 'connected'}
+        isVisible={showFloatingStop}
+      />
 
       {/* Bottom Navigation */}
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
