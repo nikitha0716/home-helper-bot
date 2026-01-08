@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, memo } from 'react';
 import { OctagonX } from 'lucide-react';
 
 interface FloatingEmergencyStopProps {
@@ -7,7 +7,17 @@ interface FloatingEmergencyStopProps {
   isVisible?: boolean;
 }
 
-export function FloatingEmergencyStop({ 
+/**
+ * EMERGENCY STOP BUTTON
+ * 
+ * CRITICAL REQUIREMENTS:
+ * - Always visible in fixed position
+ * - Never animates position
+ * - Supports long-press for hard stop
+ * - Only color/glow changes on interaction
+ * - Overrides all modes and UI states
+ */
+export const FloatingEmergencyStop = memo(function FloatingEmergencyStop({ 
   onStop, 
   isBluetoothConnected,
   isVisible = true 
@@ -21,7 +31,7 @@ export function FloatingEmergencyStop({
     
     setIsPressed(true);
     
-    // Long press for hard stop - starts timer
+    // Long press for hard stop - 500ms threshold
     longPressTimer.current = setTimeout(() => {
       setIsLongPress(true);
       onStop();
@@ -56,36 +66,43 @@ export function FloatingEmergencyStop({
         fixed bottom-24 right-4 z-50
         w-16 h-16 rounded-full
         flex items-center justify-center
-        transition-colors duration-150
+        select-none touch-none
         ${isBluetoothConnected 
           ? isPressed
-            ? 'bg-destructive/80' 
-            : 'bg-destructive hover:bg-destructive/90 cursor-pointer'
-          : 'bg-destructive/40 cursor-not-allowed'
+            ? 'bg-destructive/90' 
+            : 'bg-destructive cursor-pointer'
+          : 'bg-destructive/30 cursor-not-allowed'
         }
       `}
       style={{
+        // Fixed position - never transforms
+        transform: 'none',
         boxShadow: isBluetoothConnected 
           ? isPressed
-            ? '0 0 40px hsl(0 72% 51% / 0.7), 0 4px 20px hsl(0 72% 51% / 0.4)' 
-            : '0 0 25px hsl(0 72% 51% / 0.4), 0 4px 15px hsl(0 72% 51% / 0.25)'
-          : 'none'
+            ? '0 0 30px hsl(var(--destructive) / 0.7)' 
+            : '0 0 20px hsl(var(--destructive) / 0.4)'
+          : 'none',
+        // No transition on transform, only on colors
+        transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
       }}
       aria-label="Emergency Stop"
     >
       <OctagonX 
-        className={`w-8 h-8 text-destructive-foreground transition-transform duration-150 ${
-          isPressed ? 'scale-90' : ''
-        }`} 
+        className={`w-8 h-8 text-destructive-foreground ${
+          isPressed ? 'opacity-80' : ''
+        }`}
+        style={{ transition: 'opacity 0.15s ease' }}
       />
       
-      {/* Long press indicator ring */}
+      {/* Long press visual feedback - ring only, no position change */}
       {isPressed && isBluetoothConnected && (
-        <div 
-          className="absolute inset-0 rounded-full border-4 border-destructive-foreground/50 animate-ping"
-          style={{ animationDuration: '0.5s', animationIterationCount: 1 }}
+        <span 
+          className="absolute inset-0 rounded-full border-3 border-destructive-foreground/40"
+          style={{
+            animation: 'pulse 0.5s ease-out forwards',
+          }}
         />
       )}
     </button>
   );
-}
+});
