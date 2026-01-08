@@ -57,6 +57,13 @@ const statusConfig: Record<RobotStatus, {
     pulseColor: 'bg-destructive',
     label: 'Error',
   },
+  emergency_stop: {
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/30',
+    animation: { scale: [1, 1.05, 1] },
+    pulseColor: 'bg-destructive',
+    label: 'STOPPED',
+  },
 };
 
 const sizeConfig = {

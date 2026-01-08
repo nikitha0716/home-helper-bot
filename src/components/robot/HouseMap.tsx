@@ -1,8 +1,7 @@
 import { motion } from 'framer-motion';
-import { Bot, Sofa, Bed, ChefHat, Package, Navigation, Phone } from 'lucide-react';
+import { Bot, Sofa, Bed, ChefHat, Package, Navigation, Phone, Bluetooth } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoomId, Room, RobotState } from '@/types/robot';
-import { RobotAnimation } from './RobotAnimation';
 
 interface HouseMapProps {
   state: RobotState;
@@ -24,8 +23,28 @@ const roomIcons: Record<string, React.ReactNode> = {
 };
 
 export function HouseMap({ state, onSelectRoom }: HouseMapProps) {
-  const { currentRoom, destinationRoom, isMoving, bluetoothStatus, status } = state;
+  const { currentRoom, destinationRoom, isMoving, bluetoothStatus, status, mode } = state;
   const isConnected = bluetoothStatus === 'connected';
+  const isAutoMode = mode === 'auto';
+
+  // Empty state when not connected
+  if (!isConnected) {
+    return (
+      <div className="flex flex-col h-full p-4 items-center justify-center">
+        <div className="text-center space-y-4 max-w-xs">
+          <div className="w-20 h-20 mx-auto rounded-full bg-secondary/50 flex items-center justify-center">
+            <Bluetooth className="w-10 h-10 text-muted-foreground/50" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-lg font-medium text-muted-foreground">Connect to Begin</h2>
+            <p className="text-sm text-muted-foreground/70">
+              Connect to your robot via Bluetooth to view the home map and control navigation
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Calculate positions for path line
   const getRoomCenter = (roomId: RoomId | null) => {
@@ -42,96 +61,90 @@ export function HouseMap({ state, onSelectRoom }: HouseMapProps) {
 
   return (
     <div className="flex flex-col h-full p-4 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      {/* Header with Status */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">Home Map</h1>
-          <p className="text-sm text-muted-foreground">
-            {isMoving ? 'Robot is navigating...' : 'Tap a room to send robot'}
-          </p>
+          <div className={`px-2 py-1 rounded-md text-xs font-medium ${
+            isMoving ? 'bg-primary/20 text-primary' : 
+            status === 'idle' ? 'bg-success/20 text-success' :
+            'bg-muted text-muted-foreground'
+          }`}>
+            {isMoving ? 'Navigating' : status === 'idle' ? 'Ready' : status.replace('_', ' ')}
+          </div>
         </div>
-        <RobotAnimation status={status} size="sm" />
+        <p className="text-sm text-muted-foreground">
+          {isMoving 
+            ? `Moving to ${destinationRoom?.replace('-', ' ')}...` 
+            : isAutoMode
+              ? 'Tap a room to send robot'
+              : 'Switch to Auto mode for destination control'
+          }
+        </p>
       </div>
 
       {/* Map Container */}
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center min-h-0">
         <div className="relative w-full max-w-sm aspect-square">
           {/* House Outline */}
-          <motion.div 
-            className="absolute inset-0 border-2 border-border/50 rounded-2xl bg-secondary/20"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-          />
+          <div className="absolute inset-0 border-2 border-border/50 rounded-2xl bg-secondary/10" />
           
           {/* Room Grid */}
-          <div className="absolute inset-2 grid grid-cols-2 grid-rows-2 gap-2">
-            {rooms.map((room, index) => {
+          <div className={`absolute inset-2 grid grid-cols-2 grid-rows-2 gap-2 transition-opacity duration-200 ${
+            !isAutoMode ? 'opacity-60' : ''
+          }`}>
+            {rooms.map((room) => {
               const isCurrentRoom = currentRoom === room.id;
               const isDestination = destinationRoom === room.id;
+              const canSelect = isConnected && !isMoving && isAutoMode && !isCurrentRoom;
               
               return (
-                <motion.button
+                <button
                   key={room.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                  onClick={() => isConnected && !isMoving && onSelectRoom(room.id)}
-                  disabled={!isConnected || isMoving || isCurrentRoom}
+                  onClick={() => canSelect && onSelectRoom(room.id)}
+                  disabled={!canSelect}
                   className={`
                     relative glass-card p-3 flex flex-col items-center justify-center gap-2
-                    transition-all duration-300
-                    ${isCurrentRoom ? 'border-primary glow-primary' : ''}
-                    ${isDestination ? 'border-warning glow-warning' : ''}
-                    ${!isConnected || isMoving ? 'opacity-50' : 'hover:border-primary/50'}
+                    transition-all duration-200 border-2
+                    ${isCurrentRoom ? 'border-primary bg-primary/10' : 'border-transparent'}
+                    ${isDestination ? 'border-warning bg-warning/10' : ''}
+                    ${canSelect ? 'hover:border-primary/50 cursor-pointer' : 'cursor-default'}
                   `}
-                  whileHover={isConnected && !isMoving ? { scale: 1.02 } : {}}
-                  whileTap={isConnected && !isMoving ? { scale: 0.98 } : {}}
                 >
-                  <motion.div 
-                    className={`
-                      w-12 h-12 rounded-xl flex items-center justify-center
-                      ${isCurrentRoom ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted-foreground'}
-                    `}
-                    animate={isCurrentRoom ? { scale: [1, 1.05, 1] } : {}}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
+                  <div className={`
+                    w-12 h-12 rounded-xl flex items-center justify-center transition-colors
+                    ${isCurrentRoom ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted-foreground'}
+                    ${isDestination && !isCurrentRoom ? 'bg-warning/20 text-warning' : ''}
+                  `}>
                     {roomIcons[room.icon]}
-                  </motion.div>
+                  </div>
                   <span className="text-xs font-medium">{room.name}</span>
                   
                   {/* Robot Indicator */}
                   {isCurrentRoom && (
                     <motion.div
                       className="absolute top-2 right-2"
-                      animate={{ y: [0, -4, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
+                      animate={isMoving ? { y: [0, -3, 0] } : {}}
+                      transition={{ duration: 0.8, repeat: isMoving ? Infinity : 0 }}
                     >
                       <Bot className="w-5 h-5 text-primary" />
                     </motion.div>
                   )}
                   
                   {/* Destination Indicator */}
-                  {isDestination && (
-                    <motion.div
-                      className="absolute top-2 right-2"
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                    >
+                  {isDestination && !isCurrentRoom && (
+                    <div className="absolute top-2 right-2">
                       <Navigation className="w-5 h-5 text-warning" />
-                    </motion.div>
+                    </div>
                   )}
-                </motion.button>
+                </button>
               );
             })}
           </div>
 
-          {/* Movement Path Animation */}
+          {/* Movement Path - Subtle animation */}
           {isMoving && currentRoom && destinationRoom && (
-            <motion.svg
-              className="absolute inset-0 pointer-events-none"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
+            <svg className="absolute inset-0 pointer-events-none">
               <defs>
                 <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="hsl(var(--primary))" />
@@ -144,33 +157,29 @@ export function HouseMap({ state, onSelectRoom }: HouseMapProps) {
                 x2={`${endPos.x}%`}
                 y2={`${endPos.y}%`}
                 stroke="url(#pathGradient)"
-                strokeWidth="3"
-                strokeDasharray="8,4"
+                strokeWidth="2"
+                strokeDasharray="6,4"
                 strokeLinecap="round"
-                animate={{ strokeDashoffset: [0, -24] }}
-                transition={{ duration: 0.5, repeat: Infinity, ease: 'linear' }}
+                strokeOpacity="0.6"
+                animate={{ strokeDashoffset: [0, -20] }}
+                transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
               />
-              {/* Moving dot */}
-              <motion.circle
-                r="6"
-                fill="hsl(var(--primary))"
-                animate={{
-                  cx: [`${startPos.x}%`, `${endPos.x}%`],
-                  cy: [`${startPos.y}%`, `${endPos.y}%`],
-                }}
-                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              />
-            </motion.svg>
+            </svg>
+          )}
+
+          {/* Manual Mode Overlay */}
+          {!isAutoMode && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/40 rounded-2xl">
+              <p className="text-sm text-muted-foreground text-center px-8">
+                Switch to Auto Mode to select destinations
+              </p>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Status Card */}
-      <motion.div 
-        className="glass-card p-4 space-y-3"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      {/* Status Card - Clean & minimal */}
+      <div className="glass-card p-4 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Current Location</span>
           <span className="text-sm font-medium capitalize">
@@ -179,38 +188,21 @@ export function HouseMap({ state, onSelectRoom }: HouseMapProps) {
         </div>
         
         {destinationRoom && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="flex items-center justify-between"
-          >
+          <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Destination</span>
             <span className="text-sm font-medium text-warning capitalize">
               {destinationRoom.replace('-', ' ')}
             </span>
-          </motion.div>
-        )}
-        
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Status</span>
-          <div className="flex items-center gap-2">
-            <motion.div
-              className={`w-2 h-2 rounded-full ${isMoving ? 'bg-warning' : 'bg-success'}`}
-              animate={isMoving ? { opacity: [1, 0.5, 1] } : {}}
-              transition={{ duration: 1, repeat: Infinity }}
-            />
-            <span className={`text-sm font-medium ${isMoving ? 'text-warning' : 'text-success'}`}>
-              {isMoving ? 'Moving' : 'Ready'}
-            </span>
           </div>
-        </div>
-      </motion.div>
+        )}
+      </div>
 
       {/* Call Robot Button */}
       <Button
         size="lg"
-        disabled={!isConnected}
-        className="w-full py-6 gap-2"
+        disabled={!isConnected || isMoving}
+        variant="outline"
+        className="w-full py-5 gap-2"
       >
         <Phone className="w-5 h-5" />
         Call Robot to My Location
