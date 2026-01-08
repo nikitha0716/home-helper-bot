@@ -17,6 +17,7 @@ export type RobotStatus =
   | 'obstacle_detected'
   | 'task_completed'
   | 'charging'
+  | 'emergency_stop'
   | 'error';
 
 export interface BluetoothDevice {
