@@ -11,7 +11,7 @@ import {
 } from '@/types/robot';
 
 const initialState: RobotState = {
-  bluetoothStatus: 'disconnected',
+  bluetoothStatus: 'connected',
   wifiStatus: 'disconnected',
   currentRoom: 'living-room',
   destinationRoom: null,
