@@ -54,8 +54,8 @@ const RobotControlApp = () => {
   const isConnected = state.bluetoothStatus === 'connected';
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
+      {/* Header - Fixed */}
       <Header
         bluetoothStatus={state.bluetoothStatus}
         wifiStatus={state.wifiStatus}
@@ -64,8 +64,8 @@ const RobotControlApp = () => {
         onToggleSimulation={handleToggleSimulation}
       />
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      {/* Main Content - Fills remaining space, no external scroll */}
+      <main className="flex-1 min-h-0 overflow-hidden">
         {!isConnected ? (
           <BluetoothScreen
             status={state.bluetoothStatus}
@@ -89,7 +89,7 @@ const RobotControlApp = () => {
         )}
       </main>
 
-      {/* Floating Emergency Stop */}
+      {/* Floating Emergency Stop - Fixed position, always visible when connected */}
       <FloatingEmergencyStop
         onStop={emergencyStop}
         isBluetoothConnected={isConnected}
