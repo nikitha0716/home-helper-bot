@@ -27,6 +27,7 @@ const RobotControlApp = () => {
     setSpeed,
     sendControl,
     emergencyStop,
+    setDisplayMessage,
   } = useRobotState();
 
   const handleSelectRoom = useCallback((roomId: RoomId) => {
@@ -85,6 +86,7 @@ const RobotControlApp = () => {
             onModeChange={setMode}
             onConnectWifi={connectWifi}
             onDisconnectWifi={disconnectWifi}
+            onSendMessage={setDisplayMessage}
           />
         )}
       </main>

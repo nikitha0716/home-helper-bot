@@ -5,17 +5,20 @@ import { RobotMode } from '@/types/robot';
 interface ModeToggleBarProps {
   mode: RobotMode;
   onModeChange: (mode: RobotMode) => void;
+  disabled?: boolean;
 }
 
 // Mode Toggle - Fixed buttons, no position animation
 export const ModeToggleBar = memo(function ModeToggleBar({
   mode,
   onModeChange,
+  disabled = false,
 }: ModeToggleBarProps) {
   return (
-    <div className="grid grid-cols-2 gap-2 flex-shrink-0">
+    <div className={`grid grid-cols-2 gap-2 flex-shrink-0 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
       <button
         onClick={() => onModeChange('auto')}
+        disabled={disabled}
         className={`p-3 rounded-xl border-2 transition-colors duration-200 ${
           mode === 'auto' 
             ? 'bg-primary/15 border-primary' 
@@ -31,6 +34,7 @@ export const ModeToggleBar = memo(function ModeToggleBar({
       </button>
       <button
         onClick={() => onModeChange('manual')}
+        disabled={disabled}
         className={`p-3 rounded-xl border-2 transition-colors duration-200 ${
           mode === 'manual' 
             ? 'bg-warning/15 border-warning' 
