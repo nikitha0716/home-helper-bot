@@ -3,7 +3,6 @@ import { useRobotState } from '@/hooks/useRobotState';
 import { Header } from '@/components/robot/Header';
 import { BluetoothScreen } from '@/components/robot/BluetoothScreen';
 import { DestinationDialog } from '@/components/robot/DestinationDialog';
-import { FloatingEmergencyStop } from '@/components/robot/FloatingEmergencyStop';
 import { Dashboard } from '@/components/robot/Dashboard';
 import { RoomId } from '@/types/robot';
 
@@ -20,8 +19,6 @@ const RobotControlApp = () => {
     scanForDevices,
     connectBluetooth,
     disconnectBluetooth,
-    connectWifi,
-    disconnectWifi,
     setDestination,
     setMode,
     setSpeed,
@@ -84,19 +81,11 @@ const RobotControlApp = () => {
             onControl={sendControl}
             onSpeedChange={setSpeed}
             onModeChange={setMode}
-            onConnectWifi={connectWifi}
-            onDisconnectWifi={disconnectWifi}
+            onEmergencyStop={emergencyStop}
             onSendMessage={setDisplayMessage}
           />
         )}
       </main>
-
-      {/* Floating Emergency Stop - Fixed position, always visible when connected */}
-      <FloatingEmergencyStop
-        onStop={emergencyStop}
-        isBluetoothConnected={isConnected}
-        isVisible={isConnected}
-      />
 
       {/* Destination Confirmation Dialog */}
       <DestinationDialog
