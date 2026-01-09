@@ -8,6 +8,7 @@ interface ManualModeViewProps {
   speed: number;
   onControl: (direction: ControlDirection) => void;
   onSpeedChange: (speed: number) => void;
+  disabled?: boolean;
 }
 
 // MANUAL MODE: Large joystick, speed slider, NO map
@@ -15,24 +16,31 @@ export const ManualModeView = memo(function ManualModeView({
   speed,
   onControl,
   onSpeedChange,
+  disabled = false,
 }: ManualModeViewProps) {
   const handleSpeedChange = useCallback((values: number[]) => {
     onSpeedChange(values[0]);
   }, [onSpeedChange]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className={`flex flex-col h-full ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
       {/* Mode Label */}
       <div className="text-center py-2 mb-2">
-        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-warning/10 border border-warning/20">
-          <Hand className="w-3.5 h-3.5 text-warning" />
-          <span className="text-xs font-medium text-warning">Direct manual control enabled</span>
+        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${
+          disabled 
+            ? 'bg-muted/10 border border-muted/20'
+            : 'bg-warning/10 border border-warning/20'
+        }`}>
+          <Hand className={`w-3.5 h-3.5 ${disabled ? 'text-muted-foreground' : 'text-warning'}`} />
+          <span className={`text-xs font-medium ${disabled ? 'text-muted-foreground' : 'text-warning'}`}>
+            {disabled ? 'Manual control disabled' : 'Direct manual control enabled'}
+          </span>
         </span>
       </div>
 
       {/* Joystick - Centered, fixed position */}
       <div className="flex-1 flex items-center justify-center">
-        <StableJoystick isActive={true} onControl={onControl} />
+        <StableJoystick isActive={!disabled} onControl={onControl} />
       </div>
 
       {/* Speed Control - Fixed below joystick */}
@@ -50,6 +58,7 @@ export const ManualModeView = memo(function ManualModeView({
           max={100}
           min={10}
           step={10}
+          disabled={disabled}
         />
         <div className="flex justify-between text-[10px] text-muted-foreground/60 mt-1">
           <span>Slow</span>

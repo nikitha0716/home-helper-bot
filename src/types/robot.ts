@@ -38,6 +38,10 @@ export interface RobotState {
   status: RobotStatus;
   speed: number;
   isMoving: boolean;
+  isCharging: boolean;
+  loadWeight: number; // kg
+  maxLoadWeight: number; // kg
+  displayMessage: string;
 }
 
 export interface StatusMessage {

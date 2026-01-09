@@ -21,6 +21,10 @@ const initialState: RobotState = {
   status: 'idle',
   speed: 50,
   isMoving: false,
+  isCharging: false,
+  loadWeight: 2.5,
+  maxLoadWeight: 10,
+  displayMessage: '',
 };
 
 export function useRobotState() {
@@ -159,6 +163,27 @@ export function useRobotState() {
     addMessage('warning', 'EMERGENCY STOP activated');
   }, [addMessage]);
 
+  const setDisplayMessage = useCallback((message: string) => {
+    setState((prev) => ({ ...prev, displayMessage: message }));
+    if (message) {
+      addMessage('info', `Display message updated: "${message}"`);
+    } else {
+      addMessage('info', 'Display message cleared');
+    }
+  }, [addMessage]);
+
+  const toggleCharging = useCallback(() => {
+    setState((prev) => {
+      const newCharging = !prev.isCharging;
+      return { 
+        ...prev, 
+        isCharging: newCharging,
+        status: newCharging ? 'charging' : 'idle',
+        isMoving: false
+      };
+    });
+  }, []);
+
   return {
     state,
     messages,
@@ -174,5 +199,7 @@ export function useRobotState() {
     setSpeed,
     sendControl,
     emergencyStop,
+    setDisplayMessage,
+    toggleCharging,
   };
 }
