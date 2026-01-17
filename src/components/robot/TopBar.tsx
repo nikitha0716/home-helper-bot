@@ -10,8 +10,10 @@ interface TopBarProps {
 }
 
 /**
- * TOP BAR - Full width, always visible
- * Contains: Robot name, current mode, battery, bluetooth, Emergency STOP
+ * RESPONSIVE TOP BAR
+ * 
+ * Mobile: Compact with icons only, smaller touch targets
+ * Tablet/Desktop: Full layout with text labels
  */
 export const TopBar = memo(function TopBar({ 
   state, 
@@ -63,72 +65,72 @@ export const TopBar = memo(function TopBar({
   }, []);
 
   return (
-    <div className="flex items-center justify-between gap-4 p-3 bg-secondary/40 border-b border-border/50">
+    <div className="flex items-center justify-between gap-2 sm:gap-4 p-2 sm:p-3 bg-secondary/40 border-b border-border/50">
       {/* Left: Robot Name + Mode */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         {/* Robot Name */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-            <Bot className="w-4 h-4 text-primary" />
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+            <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
           </div>
-          <span className="font-semibold text-sm">HomeBot</span>
+          <span className="font-semibold text-xs sm:text-sm hidden xs:inline">HomeBot</span>
         </div>
 
         {/* Mode Toggle */}
-        <div className="flex items-center bg-background/50 rounded-lg p-1 gap-1">
+        <div className="flex items-center bg-background/50 rounded-lg p-0.5 sm:p-1 gap-0.5 sm:gap-1">
           <button
             onClick={() => onModeChange('auto')}
             disabled={isCharging}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-colors ${
               mode === 'auto'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             } ${isCharging ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <Zap className="w-3.5 h-3.5" />
-            Auto
+            <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <span className="hidden sm:inline">Auto</span>
           </button>
           <button
             onClick={() => onModeChange('manual')}
             disabled={isCharging}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-colors ${
               mode === 'manual'
                 ? 'bg-warning text-warning-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             } ${isCharging ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <Hand className="w-3.5 h-3.5" />
-            Manual
+            <Hand className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <span className="hidden sm:inline">Manual</span>
           </button>
         </div>
       </div>
 
       {/* Right: Status + Emergency Stop */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
         {/* Battery */}
-        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${
+        <div className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1 rounded-md ${
           isCharging ? 'bg-warning/10' : batteryLevel <= 20 ? 'bg-destructive/10' : 'bg-secondary/50'
         }`}>
           {isCharging ? (
-            <BatteryCharging className="w-4 h-4 text-warning" />
+            <BatteryCharging className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-warning" />
           ) : (
-            <Battery className={`w-4 h-4 ${batteryLevel <= 20 ? 'text-destructive' : 'text-success'}`} />
+            <Battery className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${batteryLevel <= 20 ? 'text-destructive' : 'text-success'}`} />
           )}
-          <span className={`text-xs font-mono ${isCharging ? 'text-warning' : ''}`}>
+          <span className={`text-[10px] sm:text-xs font-mono ${isCharging ? 'text-warning' : ''}`}>
             {batteryLevel}%
           </span>
         </div>
 
         {/* Bluetooth Status */}
-        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${
+        <div className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1 rounded-md ${
           isConnected ? 'bg-primary/10' : 'bg-destructive/10'
         }`}>
           {isConnected ? (
-            <Bluetooth className="w-4 h-4 text-primary" />
+            <Bluetooth className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
           ) : (
-            <BluetoothOff className="w-4 h-4 text-destructive" />
+            <BluetoothOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-destructive" />
           )}
-          <span className={`text-xs ${isConnected ? 'text-primary' : 'text-destructive'}`}>
+          <span className={`text-[10px] sm:text-xs hidden sm:inline ${isConnected ? 'text-primary' : 'text-destructive'}`}>
             {isConnected ? 'Connected' : 'Disconnected'}
           </span>
         </div>
@@ -137,7 +139,7 @@ export const TopBar = memo(function TopBar({
         <Button
           variant="destructive"
           size="sm"
-          className="relative overflow-hidden font-bold tracking-wide px-4"
+          className="relative overflow-hidden font-bold tracking-wide px-2 sm:px-4 h-8 sm:h-9 min-w-[44px]"
           onMouseDown={handlePressStart}
           onMouseUp={handlePressEnd}
           onMouseLeave={handlePressEnd}
@@ -151,8 +153,8 @@ export const TopBar = memo(function TopBar({
               style={{ width: `${holdProgress}%` }}
             />
           )}
-          <StopCircle className="w-4 h-4 mr-1.5 relative z-10" />
-          <span className="relative z-10">STOP</span>
+          <StopCircle className="w-4 h-4 sm:mr-1.5 relative z-10" />
+          <span className="relative z-10 hidden sm:inline">STOP</span>
         </Button>
       </div>
     </div>

@@ -16,10 +16,10 @@ const rooms: Room[] = [
 ];
 
 const roomIcons: Record<string, React.ReactNode> = {
-  sofa: <Sofa className="w-6 h-6" />,
-  bed: <Bed className="w-6 h-6" />,
-  chef: <ChefHat className="w-6 h-6" />,
-  package: <Package className="w-6 h-6" />,
+  sofa: <Sofa className="w-5 h-5 sm:w-6 sm:h-6" />,
+  bed: <Bed className="w-5 h-5 sm:w-6 sm:h-6" />,
+  chef: <ChefHat className="w-5 h-5 sm:w-6 sm:h-6" />,
+  package: <Package className="w-5 h-5 sm:w-6 sm:h-6" />,
 };
 
 // Calculate path between rooms for visualization
@@ -31,7 +31,12 @@ function getPathBetweenRooms(from: RoomId | null, to: RoomId | null): { from: Ro
   return { from: fromRoom, to: toRoom };
 }
 
-// AUTO MODE: Large house map, destination selection, path display
+/**
+ * RESPONSIVE AUTO MODE VIEW
+ * 
+ * Mobile: Compact room cards, smaller text
+ * Tablet/Desktop: Larger room cards with full labels
+ */
 export const AutoModeView = memo(function AutoModeView({
   state,
   onSelectRoom,
@@ -46,34 +51,34 @@ export const AutoModeView = memo(function AutoModeView({
   return (
     <div className="flex flex-col h-full">
       {/* Mode Label */}
-      <div className="text-center py-2 mb-2">
-        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-          <Navigation className="w-3.5 h-3.5 text-primary" />
-          <span className="text-xs font-medium text-primary">
-            {isCharging ? 'Robot is charging' : 'Robot navigating automatically'}
+      <div className="text-center py-1.5 sm:py-2 mb-1 sm:mb-2">
+        <span className="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-primary/10 border border-primary/20">
+          <Navigation className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary" />
+          <span className="text-[10px] sm:text-xs font-medium text-primary">
+            {isCharging ? 'Robot charging' : 'Auto navigation'}
           </span>
         </span>
       </div>
 
       {/* Path Indicator (when moving) */}
       {pathInfo && isMoving && (
-        <div className="mx-4 mb-2 p-2.5 rounded-lg bg-warning/10 border border-warning/30">
-          <div className="flex items-center justify-center gap-2 text-sm">
-            <span className="font-medium text-warning">{rooms.find(r => r.id === currentRoom)?.name}</span>
+        <div className="mx-2 sm:mx-4 mb-1.5 sm:mb-2 p-1.5 sm:p-2.5 rounded-lg bg-warning/10 border border-warning/30">
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+            <span className="font-medium text-warning truncate">{rooms.find(r => r.id === currentRoom)?.name}</span>
             <motion.div
               animate={{ x: [0, 5, 0] }}
               transition={{ duration: 1, repeat: Infinity }}
             >
-              <ArrowRight className="w-4 h-4 text-warning" />
+              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-warning flex-shrink-0" />
             </motion.div>
-            <span className="font-medium text-warning">{rooms.find(r => r.id === destinationRoom)?.name}</span>
+            <span className="font-medium text-warning truncate">{rooms.find(r => r.id === destinationRoom)?.name}</span>
           </div>
         </div>
       )}
 
       {/* House Map - Large */}
-      <div className="flex-1 flex items-center justify-center p-2">
-        <div className="relative">
+      <div className="flex-1 flex items-center justify-center p-1.5 sm:p-2">
+        <div className="relative w-full max-w-xs">
           {/* Path Line SVG Overlay */}
           {pathInfo && isMoving && (
             <svg 
@@ -110,7 +115,7 @@ export const AutoModeView = memo(function AutoModeView({
             </svg>
           )}
 
-          <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             {rooms.map((room) => {
               const isCurrentRoom = currentRoom === room.id;
               const isDestination = destinationRoom === room.id;
@@ -122,8 +127,8 @@ export const AutoModeView = memo(function AutoModeView({
                   onClick={() => canSelect && onSelectRoom(room.id)}
                   disabled={!canSelect}
                   className={`
-                    relative p-4 rounded-xl flex flex-col items-center gap-2 
-                    border-2 transition-colors duration-200
+                    relative p-3 sm:p-4 rounded-xl flex flex-col items-center gap-1.5 sm:gap-2 
+                    border-2 transition-colors duration-200 min-h-[80px] sm:min-h-[100px]
                     ${isCurrentRoom 
                       ? 'border-primary bg-primary/10' 
                       : isDestination 
@@ -133,7 +138,7 @@ export const AutoModeView = memo(function AutoModeView({
                     ${canSelect ? 'cursor-pointer active:scale-[0.98]' : 'cursor-default opacity-70'}
                   `}
                 >
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center transition-colors ${
                     isCurrentRoom 
                       ? 'bg-primary/20 text-primary' 
                       : isDestination 
@@ -142,26 +147,26 @@ export const AutoModeView = memo(function AutoModeView({
                   }`}>
                     {roomIcons[room.icon]}
                   </div>
-                  <span className="text-xs font-medium">{room.name}</span>
+                  <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">{room.name}</span>
                   
                   {/* Robot indicator with pulse when current */}
                   {isCurrentRoom && (
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2">
                       <motion.div
                         animate={isMoving ? { scale: [1, 1.2, 1] } : {}}
                         transition={{ duration: 1, repeat: Infinity }}
                       >
-                        <Bot className="w-4 h-4 text-primary" />
+                        <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                       </motion.div>
                     </div>
                   )}
                   {isDestination && !isCurrentRoom && (
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2">
                       <motion.div
                         animate={{ scale: [1, 1.1, 1] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
                       >
-                        <Navigation className="w-4 h-4 text-warning" />
+                        <Navigation className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-warning" />
                       </motion.div>
                     </div>
                   )}
@@ -173,8 +178,8 @@ export const AutoModeView = memo(function AutoModeView({
       </div>
 
       {/* Status Message */}
-      <div className="text-center py-2">
-        <p className="text-xs text-muted-foreground">
+      <div className="text-center py-1.5 sm:py-2">
+        <p className="text-[10px] sm:text-xs text-muted-foreground px-2">
           {isCharging 
             ? 'Robot is charging — movement disabled'
             : isMoving 
