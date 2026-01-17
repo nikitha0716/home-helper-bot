@@ -5,7 +5,14 @@ interface StableJoystickProps {
   onControl: (direction: 'forward' | 'backward' | 'left' | 'right' | 'stop') => void;
 }
 
-// Memoized joystick component - never re-mounts on state updates
+/**
+ * RESPONSIVE Memoized Joystick Component
+ * 
+ * Mobile: Smaller size (120px) with proportional knob
+ * Tablet/Desktop: Larger size (160px) with full-size knob
+ * 
+ * Never re-mounts on state updates
+ */
 export const StableJoystick = memo(function StableJoystick({
   isActive,
   onControl,
@@ -23,7 +30,8 @@ export const StableJoystick = memo(function StableJoystick({
     const y = e.clientY - rect.top - centerY;
     
     const distance = Math.sqrt(x * x + y * y);
-    const maxDistance = 50;
+    // Responsive max distance based on container size
+    const maxDistance = rect.width * 0.3;
     
     if (distance > maxDistance) {
       const angle = Math.atan2(y, x);
@@ -35,7 +43,7 @@ export const StableJoystick = memo(function StableJoystick({
       setJoystickPos({ x, y });
     }
 
-    const threshold = 20;
+    const threshold = maxDistance * 0.4;
     if (Math.abs(y) > Math.abs(x)) {
       if (y < -threshold) onControl('forward');
       else if (y > threshold) onControl('backward');
@@ -60,9 +68,9 @@ export const StableJoystick = memo(function StableJoystick({
 
   return (
     <div className="flex flex-col items-center justify-center">
-      {/* Fixed Outer Base - Never moves */}
+      {/* Fixed Outer Base - Responsive sizing */}
       <div 
-        className="relative w-40 h-40 rounded-full bg-secondary/40 border-2 border-border/40"
+        className="relative w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[160px] md:h-[160px] rounded-full bg-secondary/40 border-2 border-border/40"
         onPointerMove={handleJoystickMove}
         onPointerUp={handleJoystickRelease}
         onPointerLeave={handleJoystickRelease}
@@ -76,14 +84,14 @@ export const StableJoystick = memo(function StableJoystick({
         </div>
         
         {/* Fixed Direction Labels */}
-        <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground/60 font-medium select-none">FWD</span>
-        <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground/60 font-medium select-none">REV</span>
-        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground/60 font-medium select-none">L</span>
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground/60 font-medium select-none">R</span>
+        <span className="absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 text-[8px] sm:text-[10px] text-muted-foreground/60 font-medium select-none">FWD</span>
+        <span className="absolute bottom-1 sm:bottom-2 left-1/2 -translate-x-1/2 text-[8px] sm:text-[10px] text-muted-foreground/60 font-medium select-none">REV</span>
+        <span className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] text-muted-foreground/60 font-medium select-none">L</span>
+        <span className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] text-muted-foreground/60 font-medium select-none">R</span>
         
-        {/* Inner Knob - Only this element moves */}
+        {/* Inner Knob - Responsive sizing, only this element moves */}
         <div
-          className={`absolute w-14 h-14 rounded-full top-1/2 left-1/2 select-none touch-none ${
+          className={`absolute w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full top-1/2 left-1/2 select-none touch-none ${
             isActive ? 'cursor-grab active:cursor-grabbing' : 'cursor-not-allowed'
           }`}
           style={{
